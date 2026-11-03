@@ -24,22 +24,16 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: docker/setup-buildx-action@v4
-      - name: Resolve image name
-        id: image
-        run: echo "name=$(docker compose config --images python-cpu)" >> "$GITHUB_OUTPUT"
-      - uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: docker/cpu/Dockerfile
-          target: dev
-          load: true
-          tags: ${{ steps.image.outputs.name }}
-          cache-from: type=gha,scope=python-cpu
-          cache-to: type=gha,mode=max,scope=python-cpu
+      # - uses: docker/setup-buildx-action@v2
+      # - uses: docker/build-push-action@v4
+      #   with:
+      #     context: ${{ matrix.service }}/docker/cpu
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
       - name: Setup docker
         shell: bash
         run: |
-          docker compose up -d --no-build
+          docker compose build --progress=plain
+          docker compose up -d
       - name: Test
         run: docker compose exec python-cpu uv run tox
